@@ -1,0 +1,275 @@
+# Sign Bridge — Real-Time Sign Language Translation System
+
+> An end-to-end AI dashboard that translates sign-language gestures captured through a webcam into **text** and **speech** in real time, helping bridge the communication gap between deaf/mute individuals and non-sign-language users.
+
+![status](https://img.shields.io/badge/status-MVP-blueviolet)
+![frontend](https://img.shields.io/badge/frontend-Next.js%2015-000?logo=nextdotjs)
+![backend](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi)
+![cv](https://img.shields.io/badge/CV-MediaPipe-ff6f00)
+![ml](https://img.shields.io/badge/ML-scikit--learn-f7931e)
+
+---
+
+## ✨ Features
+
+- 🎥 **Real-time webcam feed** with mirrored, low-latency preview (30 FPS target)
+- 🖐️ **Hand detection** powered by MediaPipe Hands (up to 2 hands, 21 landmarks, skeletal overlay)
+- 🧠 **Landmark extraction** → 63 numerical features (21 × [x, y, z])
+- 🏷️ **Sign recognition** using a scikit-learn **Random Forest** classifier (A–Z + common phrases)
+- ✍️ **Sign-to-text** sentence composer with smart spacing, deduplication, and stability filter
+- 🔊 **Text-to-speech** via `pyttsx3` (backend) and the Web Speech API (frontend) with mute toggle
+- 💾 **Translation history** stored in **MongoDB** with search and delete
+- 🎨 **Modern dark dashboard** with Framer Motion animations, glass cards, and responsive layout
+
+---
+
+## 🧱 Architecture
+
+```
+┌──────────────────────┐        ┌──────────────────────┐
+│      Frontend        │        │       Backend        │
+│   Next.js 15 (App)   │  HTTP  │   FastAPI (Python)   │
+│                      │ ─────▶ │                      │
+│  • react-webcam      │        │  • MediaPipe Hands   │
+│  • MediaPipe (CDN)   │        │  • scikit-learn RF   │
+│  • Framer Motion     │        │  • pyttsx3 TTS       │
+│  • Zustand hooks     │        │  • Motor (MongoDB)   │
+└──────────┬───────────┘        └──────────┬───────────┘
+           │                               │
+           │ landmark vector               │ async I/O
+           │  (63 floats)                  ▼
+           │                       ┌──────────────────┐
+           └──────────────────────▶│     MongoDB      │
+                                   │ history + users  │
+                                   └──────────────────┘
+```
+
+### Data flow
+
+1. **Webcam** captures video at ~30 FPS
+2. **MediaPipe Hands** detects up to 2 hands → 21 landmarks each
+3. The first hand is flattened to **63 floats** and sent to the backend
+4. The **Random Forest** returns `{prediction, confidence, top_k, latency_ms}`
+5. The frontend's **stability filter** (3 identical frames) commits the sign to the **sentence**
+6. User can **speak**, **save**, or **clear** the composed sentence
+7. Saved sentences are persisted to **MongoDB** and shown in the history panel
+
+---
+
+## 📁 Folder Structure
+
+```
+real-time-sign-language-translator/
+├── frontend/                    Next.js 15 dashboard
+│   ├── app/                     App Router pages
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx             Main dashboard
+│   │   ├── history/page.tsx     History view
+│   │   └── not-found.tsx
+│   ├── components/              UI building blocks
+│   │   ├── Header.tsx
+│   │   ├── WebcamPanel.tsx
+│   │   ├── SignDisplay.tsx
+│   │   ├── SentenceBar.tsx
+│   │   ├── HistoryList.tsx
+│   │   ├── FeatureGrid.tsx
+│   │   └── Skeletons.tsx
+│   ├── hooks/                   React hooks
+│   │   ├── useHandRecognition.ts  MediaPipe + webcam
+│   │   ├── useSentenceBuilder.ts  sentence + history
+│   │   └── useSpeech.ts           Web Speech API
+│   ├── lib/                     Utilities
+│   │   ├── api.ts               axios client
+│   │   └── utils.ts             cn, formatters
+│   ├── types/                   Shared types
+│   ├── public/
+│   ├── styles/
+│   ├── next.config.js
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── tsconfig.json
+│   └── package.json
+│
+├── backend/                     FastAPI service
+│   ├── app/
+│   │   ├── main.py              FastAPI entrypoint
+│   │   ├── config.py            Settings (env)
+│   │   ├── db.py                Motor/MongoDB
+│   │   ├── routes/
+│   │   │   ├── predict.py
+│   │   │   ├── history.py
+│   │   │   └── speech.py
+│   │   ├── services/
+│   │   │   ├── hand_detection.py
+│   │   │   ├── classifier.py
+│   │   │   ├── history_service.py
+│   │   │   └── speech.py
+│   │   ├── models/schemas.py    Pydantic models
+│   │   └── utils/
+│   ├── ml/
+│   │   ├── collect_data.py      Dataset collection
+│   │   ├── train.py             Train Random Forest
+│   │   ├── predict.py           Standalone live predict
+│   │   ├── classifier.pkl       (generated by train.py)
+│   │   └── classifier.metrics.json
+│   ├── dataset/                 (generated samples)
+│   ├── requirements.txt
+│   └── .env.example
+│
+└── docs/
+    ├── API.md                   Endpoint reference
+    ├── ARCHITECTURE.md          Diagrams + design notes
+    └── SCREENSHOTS.md           Placeholder for demo shots
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+
+| Tool    | Version            |
+| ------- | ------------------ |
+| Python  | 3.11 – 3.13        |
+| Node.js | 18.18+ (or 20+)    |
+| MongoDB | 6.x (optional)\*   |
+| Webcam  | any USB / built-in |
+
+> **Python 3.13 note:** if `pip install mediapipe==0.10.14` fails with
+> `No matching distribution found`, that's because that version predates
+> cp313 wheels. The pinned versions in `requirements.txt` already target
+> Python 3.13 — just run `pip install -r requirements.txt` and let pip
+> resolve.
+
+\* _The backend works without MongoDB; it falls back to an in-memory history list._
+
+### 2. Backend
+
+```bash
+cd backend
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
+cp .env.example .env   # optional
+uvicorn app.main:app --reload --port 8000
+```
+
+The API is now at <http://localhost:8000> and the interactive docs at
+<http://localhost:8000/docs>.
+
+### 3. Collect data & train (optional, for production model)
+
+```bash
+# Record 200 samples per gesture (gesture name = label)
+python ml/collect_data.py --gesture A --samples 200
+python ml/collect_data.py --gesture B --samples 200
+# ... repeat for each class
+
+# Train
+python ml/train.py --dataset dataset --out ml/classifier.pkl
+```
+
+### 4. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open <http://localhost:3000>. The dashboard connects to the backend
+at <http://localhost:8000> by default (override with `NEXT_PUBLIC_API_URL`).
+
+> **Demo fallback:** if the backend is unreachable or the model is not trained,
+> the frontend uses a heuristic predictor so the UI stays responsive during
+> presentations.
+
+---
+
+## 📡 API
+
+See [docs/API.md](docs/API.md) for the full reference. Quick tour:
+
+| Method | Endpoint            | Purpose                             |
+| ------ | ------------------- | ----------------------------------- |
+| GET    | `/health`           | Liveness + model/db status          |
+| POST   | `/api/predict`      | 63 landmarks → `{prediction, conf}` |
+| GET    | `/api/history`      | List history (optional `?q=search`) |
+| POST   | `/api/history`      | Save a translation                  |
+| DELETE | `/api/history/{id}` | Remove a history entry              |
+| POST   | `/api/speak`        | Speak text via backend TTS          |
+
+---
+
+## 🧠 ML Pipeline
+
+1. **collect_data.py** — opens the webcam, runs MediaPipe, saves one `.npy`
+   file (63 floats) per frame into `dataset/<gesture>/`.
+2. **train.py** — loads all `.npy` files, splits 80/20 (stratified), trains a
+   `RandomForestClassifier(n_estimators=300, class_weight="balanced")`,
+   prints a classification report, and writes
+   `ml/classifier.pkl` (a bundle: `{model, labels}`).
+3. **predict.py** — standalone CLI demo that loads the pickle and overlays
+   live predictions on the webcam.
+
+The trained model is **transparent, fast, and tiny** (< 50 MB) — perfect for
+edge deployment or follow-up LSTM/Transformer experiments.
+
+---
+
+## 🎛️ Performance Targets
+
+| Metric                | Target    | How                                    |
+| --------------------- | --------- | -------------------------------------- |
+| Prediction latency    | < 100 ms  | Random Forest on 63 features           |
+| Stream FPS            | 25–30 FPS | MediaPipe + requestAnimationFrame loop |
+| UI first paint        | < 1.5 s   | Next.js 15 App Router + Tailwind       |
+| End-to-end (sign→TTS) | < 1.5 s   | Web Speech API (instant)               |
+
+---
+
+## 🗺️ Future Scope
+
+- 🎯 **Custom CNN/LSTM** trained directly on landmark sequences for dynamic
+  signs (motion-based letters such as J, Z).
+- 🌐 **Multilingual TTS** (Hindi, Spanish, etc.).
+- 📱 **Mobile PWA** with on-device TFLite inference.
+- 👥 **Two-hand gestures** (full support is already wired — needs training).
+- 🧑‍🤝‍🧑 **Conversation mode**: duplex translation (sign → speech → mic → sign).
+- 🔐 **Auth + user profiles** for personalised history.
+- 🪟 **Word/phrase suggestions** powered by an LLM to improve sentence
+  fluency.
+- ☁️ **Cloud sync** + cross-device history.
+
+---
+
+## 📸 Screenshots
+
+> Place demo screenshots in `docs/screenshots/` and reference them below.
+
+- `docs/screenshots/dashboard.png` — main dashboard
+- `docs/screenshots/sentence.png` — sentence composer
+- `docs/screenshots/history.png` — history page
+
+See [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) for a checklist.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/amazing`
+3. Commit your changes: `git commit -m "feat: amazing"`
+4. Push and open a Pull Request
+
+---
+
+## 📄 License
+
+MIT © Sign Bridge Team

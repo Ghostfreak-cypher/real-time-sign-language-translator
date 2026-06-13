@@ -1,0 +1,94 @@
+# ──────────────────────────────────────────────
+# Python / Backend
+# ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Secrets / environment files
+.env
+backend/.env
+
+# ML artifacts (train locally — not committed)
+*.pkl
+*.npy
+backend/ml/classifier.pkl
+backend/ml/classifier.metrics.json
+backend/dataset/
+
+# MediaPipe Python model (download separately)
+backend/ml/models/hand_landmarker.task
+
+# ──────────────────────────────────────────────
+# Node / Frontend
+# ──────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+
+# TypeScript incremental compilation
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+frontend/next-env.d.ts
+
+# Local env files
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Vercel
+.vercel
+
+# ──────────────────────────────────────────────
+# OS / Editor
+# ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+.idea/
+.vscode/settings.json
+.vscode/*.code-workspace
+
+# ──────────────────────────────────────────────
+# Claude Code internal files
+# ──────────────────────────────────────────────
+.claude/
+CLAUDE.md

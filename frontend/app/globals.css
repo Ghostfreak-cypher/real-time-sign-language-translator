@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  background: #0a0a0f;
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-image: radial-gradient(
+      1200px circle at 0% 0%,
+      rgba(124, 58, 237, 0.08),
+      transparent 40%
+    ),
+    radial-gradient(900px circle at 100% 100%, rgba(6, 182, 212, 0.06), transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Glassmorphism card */
+.glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Subtle dot grid background */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #a78bfa 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ring-glow {
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35), 0 0 24px rgba(124, 58, 237, 0.18);
+}
+
+/* ── Futuristic HUD layer ──────────────────────────────────────────────── */
+
+/* Neon glow that breathes — applied to the webcam frame when a hand locks on */
+.neon-active {
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.45),
+    0 0 28px rgba(6, 182, 212, 0.18),
+    0 0 64px rgba(124, 58, 237, 0.12);
+  animation: neonBreathe 2.4s ease-in-out infinite;
+}
+@keyframes neonBreathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(6, 182, 212, 0.45),
+      0 0 28px rgba(6, 182, 212, 0.18),
+      0 0 64px rgba(124, 58, 237, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(124, 58, 237, 0.5),
+      0 0 36px rgba(124, 58, 237, 0.22),
+      0 0 72px rgba(6, 182, 212, 0.14);
+  }
+}
+
+/* CRT-style scanline texture over video */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.12) 3px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+}
+
+/* Vertical sweep beam */
+@keyframes scanSweep {
+  0% { top: -10%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 105%; opacity: 0; }
+}
+.scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.9), transparent);
+  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8));
+  animation: scanSweep 2.8s linear infinite;
+}
+
+/* Slow aurora drift for the page backdrop */
+@keyframes auroraDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(4%, -3%, 0) scale(1.06); }
+  66% { transform: translate3d(-3%, 3%, 0) scale(0.98); }
+}
+.aurora {
+  animation: auroraDrift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Animated gradient hairline (header / section dividers) */
+@keyframes hairlineFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.hairline-flow {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(124, 58, 237, 0.7),
+    rgba(6, 182, 212, 0.7),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: hairlineFlow 4s linear infinite;
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
