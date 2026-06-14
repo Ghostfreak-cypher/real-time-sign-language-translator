@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Zap } from "lucide-react";
-import type { PredictionResponse } from "@/types";
+import type { PredictionResponse, SequencePredictionResponse } from "@/types";
 import { cn, formatPercent } from "@/lib/utils";
 
 type Props = {
   prediction: PredictionResponse | null;
+  sequencePrediction: SequencePredictionResponse | null;
   landmarkCount: number;
   fps: number;
   latencyMs: number | null;
@@ -14,14 +15,30 @@ type Props = {
 
 export function SignDisplay({
   prediction,
+  sequencePrediction,
   landmarkCount,
   fps,
   latencyMs,
 }: Props) {
-  const label = prediction?.prediction ?? "—";
-  const confidence = prediction?.confidence ?? 0;
+  // Show the LSTM motion prediction when it's more confident than the RF result
+  // and is not the placeholder "—". RF wins on ties (strictly greater-than).
+  const staticConf = prediction?.confidence ?? 0;
+  const seqConf = sequencePrediction?.confidence ?? 0;
+  const showMotion =
+    sequencePrediction !== null &&
+    sequencePrediction.prediction !== "—" &&
+    seqConf > 0 &&
+    seqConf > staticConf;
+
+  const activePrediction = showMotion ? sequencePrediction : prediction;
+  const label = activePrediction?.prediction ?? "—";
+  const confidence = activePrediction?.confidence ?? 0;
+  const activeLatency = showMotion
+    ? (sequencePrediction?.latency_ms ?? null)
+    : latencyMs;
+
   const isPlaceholder =
-    !prediction || label === "—" || label === "Model not trained";
+    !activePrediction || label === "—" || label === "Model not trained";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-card">
@@ -31,7 +48,7 @@ export function SignDisplay({
           Detected Sign
         </div>
         <span className="font-mono text-[10px] text-zinc-500">
-          {latencyMs !== null ? `${latencyMs.toFixed(0)} ms` : "—"}
+          {activeLatency !== null ? `${activeLatency.toFixed(0)} ms` : "—"}
         </span>
       </div>
 
@@ -48,10 +65,19 @@ export function SignDisplay({
         >
           {label}
         </motion.div>
+
+        {showMotion && (
+          <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-violet-300">
+            motion
+          </span>
+        )}
+
         <p className="max-w-xs text-xs text-zinc-500">
           {isPlaceholder
             ? "Show a sign to your webcam to begin translation."
-            : "Stable prediction. Speak, save, or compose a sentence."}
+            : showMotion
+              ? "Motion sign detected via LSTM sequence model."
+              : "Stable prediction. Speak, save, or compose a sentence."}
         </p>
 
         <div className="grid w-full grid-cols-2 gap-2 pt-2">
@@ -86,7 +112,7 @@ export function SignDisplay({
           </div>
         </div>
 
-        {prediction?.top_k && prediction.top_k.length > 0 && (
+        {prediction?.top_k && prediction.top_k.length > 0 && !showMotion && (
           <div className="w-full space-y-1.5 pt-1">
             <div className="text-[10px] uppercase tracking-wider text-zinc-500">
               Top alternatives

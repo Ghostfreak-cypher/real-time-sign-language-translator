@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
-import type { HistoryItem, PredictionResponse } from "@/types";
+import type { HistoryItem, PredictionResponse, SequencePredictionResponse } from "@/types";
 
 // In development set NEXT_PUBLIC_API_URL=http://localhost:8000 in .env.local.
 // In production set NEXT_PUBLIC_API_URL= (empty string) so all requests are
@@ -30,6 +30,16 @@ export async function predict(
     handedness: "Right",
     num_hands: 1,
   });
+  return data;
+}
+
+export async function predictSequence(
+  sequence: number[][],
+): Promise<SequencePredictionResponse> {
+  const { data } = await api.post<SequencePredictionResponse>(
+    "/api/predict/sequence",
+    { sequence },
+  );
   return data;
 }
 

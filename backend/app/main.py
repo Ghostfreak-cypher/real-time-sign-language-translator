@@ -13,6 +13,7 @@ from .db import close_mongo_connection, connect_to_mongo, get_db
 from .routes import history, predict, speech
 from .services.classifier import SignClassifier
 from .services.history_service import HistoryService
+from .services.lstm_classifier import LSTMClassifier
 from .services.speech import SpeechService
 
 logging.basicConfig(
@@ -28,6 +29,10 @@ async def lifespan(app: FastAPI):
     await connect_to_mongo()
 
     app.state.classifier = SignClassifier(model_path=settings.model_path)
+    app.state.lstm_classifier = LSTMClassifier(
+        model_path=settings.lstm_model_path,
+        labels_path=settings.lstm_labels_path,
+    )
     app.state.history = HistoryService()
     app.state.speech = SpeechService(
         rate=settings.speech_rate, volume=settings.speech_volume
@@ -48,7 +53,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,  # never include "*" with credentials
+    allow_origins=settings.all_cors_origins,  # never include "*" with credentials
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type", "Authorization"],
@@ -72,11 +77,12 @@ async def root() -> dict:
 @app.get("/health", tags=["meta"])
 async def health() -> dict:
     db = get_db()
+    classifier = getattr(app.state, "classifier", None)
+    lstm = getattr(app.state, "lstm_classifier", None)
     return {
         "status": "ok",
-        "model_loaded": app.state.classifier.is_loaded
-        if hasattr(app.state, "classifier")
-        else False,
+        "model_loaded": classifier.is_loaded if classifier else False,
+        "lstm_loaded": lstm.is_loaded if lstm else False,
         "database": "connected" if db is not None else "offline",
         "version": settings.api_version,
     }

@@ -74,8 +74,9 @@ class SignClassifier:
             return "Unknown", 0.0, [], 0.0
 
         # Apply the exact transform the model was trained with (train/serve
-        # consistency). Legacy raw-coordinate bundles skip this.
-        vec = normalize_landmarks(features) if self.preprocess else features
+        # consistency). Legacy raw-coordinate bundles (no preprocess key) skip this.
+        NORMALIZED_VERSIONS = {"wrist_mcp_v1", "wrist_mcp_rot_v2"}
+        vec = normalize_landmarks(features) if self.preprocess in NORMALIZED_VERSIONS else features
         arr = np.asarray(vec, dtype=np.float32).reshape(1, -1)
         start = time.perf_counter()
         probs = None

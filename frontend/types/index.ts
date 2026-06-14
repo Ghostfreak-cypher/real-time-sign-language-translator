@@ -10,6 +10,12 @@ export type PredictionResponse = {
   latency_ms?: number;
 };
 
+export type SequencePredictionResponse = {
+  prediction: string;
+  confidence: number;
+  latency_ms?: number;
+};
+
 export type HistoryItem = {
   _id?: string;
   text: string;

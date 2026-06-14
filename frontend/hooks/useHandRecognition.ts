@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type Webcam from "react-webcam";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
-import type { PredictionResponse } from "@/types";
-import { predict as apiPredict } from "@/lib/api";
+import type { PredictionResponse, SequencePredictionResponse } from "@/types";
+import { predict as apiPredict, predictSequence as apiPredictSequence } from "@/lib/api";
 
 export type HandDetection = {
   landmarks: number[]; // 63 values
@@ -106,8 +106,14 @@ export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
+  // Sequence buffer: last SEQ_LEN landmark frames for LSTM motion-sign classification
+  const SEQ_LEN = 30;
+  const sequenceBufferRef = useRef<number[][]>([]);
+  const lastSequencePredictRef = useRef<number>(0);
+
   const [detection, setDetection] = useState<HandDetection>(EMPTY_DETECTION);
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
+  const [sequencePrediction, setSequencePrediction] = useState<SequencePredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
@@ -193,6 +199,13 @@ export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
             width: video.videoWidth,
             height: video.videoHeight,
           });
+
+          // Maintain rolling sequence buffer for LSTM
+          if (present && landmarks.length === 63) {
+            const buf = sequenceBufferRef.current;
+            buf.push(landmarks);
+            if (buf.length > SEQ_LEN) buf.shift();
+          }
         } catch {
           // Transient frame decode hiccup — skip this frame.
         }
@@ -256,9 +269,34 @@ export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
     return () => window.clearInterval(id);
   }, [autoPredict, intervalMs, confidenceThreshold, stableFrames]);
 
+  // Sequence prediction interval — 500 ms cadence, sends last 30 frames to LSTM endpoint
+  useEffect(() => {
+    if (!autoPredict) return;
+    const SEQUENCE_INTERVAL_MS = 500;
+    const id = window.setInterval(async () => {
+      if (!enabledRef.current) return;
+      const now = Date.now();
+      if (now - lastSequencePredictRef.current < SEQUENCE_INTERVAL_MS) return;
+      if (!detectionRef.current.present) return;
+      const buf = sequenceBufferRef.current;
+      if (buf.length < SEQ_LEN) return;
+      const snapshot = buf.slice(-SEQ_LEN);
+      lastSequencePredictRef.current = now;
+      try {
+        const res = await apiPredictSequence(snapshot);
+        setSequencePrediction(res);
+      } catch {
+        // Network/server error — silently ignore; RF result still shown
+      }
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [autoPredict, SEQ_LEN]);
+
   const resetSentence = useCallback(() => {
     stableCounterRef.current = { label: "", count: 0 };
     setPrediction(null);
+    setSequencePrediction(null);
+    sequenceBufferRef.current = [];
   }, []);
 
   const onUserMedia = useCallback((_stream?: MediaStream) => {
@@ -279,6 +317,7 @@ export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
     webcamRef,
     detection,
     prediction,
+    sequencePrediction,
     error,
     ready,
     cameraReady,

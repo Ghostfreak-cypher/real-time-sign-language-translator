@@ -18,6 +18,7 @@ export default function HomePage() {
     webcamRef,
     detection,
     prediction,
+    sequencePrediction,
     error,
     ready,
     cameraReady,
@@ -144,6 +145,7 @@ export default function HomePage() {
           <div className="lg:col-span-2">
             <SignDisplay
               prediction={prediction}
+              sequencePrediction={sequencePrediction}
               landmarkCount={detection.present ? 21 : 0}
               fps={detection.fps}
               latencyMs={prediction?.latency_ms ?? null}
