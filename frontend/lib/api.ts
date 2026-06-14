@@ -1,12 +1,17 @@
 import axios, { type AxiosInstance } from "axios";
 import type { HistoryItem, PredictionResponse, SequencePredictionResponse } from "@/types";
 
-// Development:   NEXT_PUBLIC_API_URL=http://localhost:8000  (.env.local)
-// Production:    NEXT_PUBLIC_API_URL=   (empty or unset in Vercel)
-//                BACKEND_URL=https://your-app.onrender.com  (Vercel env var)
-// When API_BASE is empty, axios sends relative requests that Next.js rewrites
-// server-side to BACKEND_URL — no CORS headers needed on the Render backend.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+// The browser ALWAYS talks to the app's own origin using relative paths
+// (e.g. "/api/predict", "/health"). Next.js rewrites (see next.config.js)
+// proxy those server-side to the real backend (BACKEND_URL on Vercel, or
+// http://localhost:8000 in dev). This means:
+//   - No CORS: requests are same-origin in the browser; the Vercel↔Render hop
+//     is server-to-server.
+//   - No build-time coupling: the backend URL is NOT baked into the client
+//     bundle, so changing backends never requires a frontend rebuild.
+// Deliberately NOT using NEXT_PUBLIC_API_URL here — setting it to an absolute
+// cross-origin URL was the cause of the "Offline / Heuristic" CORS failures.
+const API_BASE = "";
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE,
