@@ -1,10 +1,12 @@
 import axios, { type AxiosInstance } from "axios";
 import type { HistoryItem, PredictionResponse, SequencePredictionResponse } from "@/types";
 
-// In development set NEXT_PUBLIC_API_URL=http://localhost:8000 in .env.local.
-// In production set NEXT_PUBLIC_API_URL= (empty string) so all requests are
-// relative and routed through Next.js rewrites — no CORS required.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Development:   NEXT_PUBLIC_API_URL=http://localhost:8000  (.env.local)
+// Production:    NEXT_PUBLIC_API_URL=   (empty or unset in Vercel)
+//                BACKEND_URL=https://your-app.onrender.com  (Vercel env var)
+// When API_BASE is empty, axios sends relative requests that Next.js rewrites
+// server-side to BACKEND_URL — no CORS headers needed on the Render backend.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE,

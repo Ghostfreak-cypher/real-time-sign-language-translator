@@ -27,10 +27,14 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    // This proxy is used in production when NEXT_PUBLIC_API_URL is set to an
-    // empty string. All /api/* and /health requests are forwarded to the
-    // FastAPI backend, keeping everything on one domain (no CORS needed).
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    // BACKEND_URL is a private server-side env var set in Vercel/Render dashboard.
+    // It is NOT prefixed NEXT_PUBLIC_ so it never leaks into the client bundle.
+    // Client-side axios uses NEXT_PUBLIC_API_URL="" (empty) → relative paths →
+    // hit these rewrites → Vercel proxies server-to-server → no CORS needed.
+    const apiBase =
+      process.env.BACKEND_URL ??
+      process.env.NEXT_PUBLIC_API_URL ??
+      "http://localhost:8000";
     return [
       { source: "/api/:path*", destination: `${apiBase}/api/:path*` },
       { source: "/health", destination: `${apiBase}/health` },
