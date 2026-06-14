@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import logging
 from contextlib import asynccontextmanager
 
@@ -28,18 +30,48 @@ async def lifespan(app: FastAPI):
     logger.info("Starting %s", settings.app_name)
     await connect_to_mongo()
 
-    app.state.classifier = SignClassifier(model_path=settings.model_path)
-    app.state.lstm_classifier = LSTMClassifier(
-        model_path=settings.lstm_model_path,
-        labels_path=settings.lstm_labels_path,
-    )
+    # Lightweight services — start synchronously (fast).
     app.state.history = HistoryService()
-    app.state.speech = SpeechService(
-        rate=settings.speech_rate, volume=settings.speech_volume
+    app.state.speech = SpeechService(rate=settings.speech_rate, volume=settings.speech_volume)
+
+    # Stub classifiers: point at a missing path so they return zero-confidence
+    # predictions immediately while the real models load in the background.
+    # This lets uvicorn bind the port before the heavy joblib/keras I/O runs.
+    app.state.classifier = SignClassifier(model_path="__loading__")
+    app.state.lstm_classifier = LSTMClassifier(
+        model_path="__loading__", labels_path="__loading__"
     )
+
+    loop = asyncio.get_event_loop()
+
+    async def _load_models() -> None:
+        logger.info("Loading ML models in background...")
+        real_clf = await loop.run_in_executor(
+            None, lambda: SignClassifier(model_path=settings.model_path)
+        )
+        app.state.classifier = real_clf
+
+        real_lstm = await loop.run_in_executor(
+            None,
+            lambda: LSTMClassifier(
+                model_path=settings.lstm_model_path,
+                labels_path=settings.lstm_labels_path,
+            ),
+        )
+        app.state.lstm_classifier = real_lstm
+        logger.info(
+            "Models ready — RF loaded=%s, LSTM loaded=%s",
+            real_clf.is_loaded,
+            real_lstm.is_loaded,
+        )
+
+    _load_task = asyncio.create_task(_load_models())
 
     yield
 
+    _load_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await _load_task
     logger.info("Shutting down")
     await close_mongo_connection()
 

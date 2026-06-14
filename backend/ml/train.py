@@ -41,7 +41,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dataset", type=Path, default=Path("dataset/landmarks"))
     p.add_argument("--out", type=Path, default=Path("ml/classifier.pkl"))
     p.add_argument("--test-size", type=float, default=0.2)
-    p.add_argument("--n-estimators", type=int, default=300)
+    p.add_argument("--n-estimators", type=int, default=150)
+    p.add_argument(
+        "--max-depth",
+        type=int,
+        default=20,
+        help="Max tree depth. Lower = smaller model. 20 keeps accuracy while "
+             "staying well under 100 MB for deployment on free-tier hosts.",
+    )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument(
         "--no-augment",
@@ -146,13 +153,14 @@ def main() -> int:
 
     clf = RandomForestClassifier(
         n_estimators=args.n_estimators,
+        max_depth=args.max_depth,
         random_state=args.seed,
         n_jobs=-1,
         class_weight="balanced",
-        min_samples_leaf=1,
+        min_samples_leaf=2,
         max_features="sqrt",
     )
-    print(f"Training RandomForest ({args.n_estimators} trees) ...")
+    print(f"Training RandomForest ({args.n_estimators} trees, max_depth={args.max_depth}) ...")
     clf.fit(X_train, y_train)
 
     y_pred = clf.predict(X_test)
