@@ -47,6 +47,14 @@ class LSTMClassifier:
 
         try:
             import tensorflow as tf  # noqa: PLC0415  (deferred import intentional)
+        except ImportError:
+            logger.warning(
+                "TensorFlow not installed — LSTM classifier disabled. "
+                "Install requirements-train.txt if you need motion-sign support."
+            )
+            return
+
+        try:
             self._model = tf.keras.models.load_model(str(model_file))
             self._labels = json.loads(labels_file.read_text(encoding="utf-8"))
             logger.info(

@@ -33,11 +33,13 @@ env/
 
 # Local
 .env
-*.pkl
 *.npy
-ml/classifier.pkl
-ml/classifier.metrics.json
 dataset/
+
+# ML artifacts — only the trained classifier is committed for deployment
+# All other .pkl files (intermediate, temp) remain ignored
+ml/lstm_classifier.keras
+ml/lstm_classifier_labels.json
 
 # MediaPipe model files
 *.task
