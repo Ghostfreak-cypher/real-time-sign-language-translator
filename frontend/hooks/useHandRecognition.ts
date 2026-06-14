@@ -81,9 +81,9 @@ function getHandLandmarker(): Promise<HandLandmarker> {
 
 export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
   const {
-    intervalMs = 120,
-    confidenceThreshold = 0.6,
-    stableFrames = 3,
+    intervalMs = 80,
+    confidenceThreshold = 0.35,
+    stableFrames = 2,
     enabled = true,
     autoPredict = true,
   } = options;
@@ -258,8 +258,8 @@ export function useHandRecognition(options: UseHandRecognitionOptions = {}) {
         if (updated.count >= stableFrames) {
           setPrediction(res);
         } else {
-          // Tentative: show with reduced confidence so the UI hints it's unstable
-          setPrediction({ ...res, confidence: res.confidence * 0.5 });
+          // Tentative: show with slightly reduced confidence so the UI hints it's unstable
+          setPrediction({ ...res, confidence: res.confidence * 0.8 });
         }
       } catch {
         // Network error — fall back to mock so the demo stays alive

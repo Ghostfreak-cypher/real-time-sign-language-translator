@@ -86,7 +86,7 @@ export function SignDisplay({
             label="Confidence"
             value={formatPercent(Math.min(confidence, 1), 0)}
             tone={
-              confidence >= 0.8 ? "good" : confidence >= 0.5 ? "warn" : "muted"
+              confidence >= 0.6 ? "good" : confidence >= 0.35 ? "warn" : "muted"
             }
           />
           <Metric
