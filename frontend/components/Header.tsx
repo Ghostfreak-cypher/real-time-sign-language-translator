@@ -10,14 +10,11 @@ type Props = {
   fps: number;
 };
 
-const statusCopy: Record<
-  Props["status"],
-  { label: string; color: string; dot: string }
-> = {
-  online: { label: "Online", color: "text-emerald-300", dot: "bg-emerald-400" },
-  starting: { label: "Starting", color: "text-amber-300", dot: "bg-amber-400" },
-  offline: { label: "Offline", color: "text-zinc-400", dot: "bg-zinc-500" },
-  error: { label: "Error", color: "text-rose-300", dot: "bg-rose-400" },
+const statusCopy: Record<Props["status"], { label: string; color: string; dot: string }> = {
+  online:   { label: "Online",   color: "text-emerald-700", dot: "bg-emerald-500" },
+  starting: { label: "Starting", color: "text-amber-700",   dot: "bg-amber-500"   },
+  offline:  { label: "Offline",  color: "text-stone-500",   dot: "bg-stone-400"   },
+  error:    { label: "Error",    color: "text-red-600",     dot: "bg-red-500"     },
 };
 
 export function Header({ status, modelLoaded, fps }: Props) {
@@ -27,67 +24,56 @@ export function Header({ status, modelLoaded, fps }: Props) {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="sticky top-0 z-30 border-b border-white/5 bg-background/70 backdrop-blur-xl"
+      className="sticky top-0 z-30 border-b border-stone-200 bg-[#f4f3ee]/90 backdrop-blur-xl"
     >
       <div className="hairline-flow absolute inset-x-0 bottom-0 h-px" />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+
         <Link href="/" className="group flex items-center gap-2.5">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-cyan-500/20 ring-1 ring-white/10 transition group-hover:ring-violet-400/40">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-brand shadow-brand transition group-hover:bg-brand-dark">
             <Hand className="h-4 w-4 text-white" aria-hidden />
-            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-emerald-400 ring-2 ring-background" />
+            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-emerald-500 ring-2 ring-[#f4f3ee]" />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold tracking-tight text-white">
-              Sign Bridge
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
-              Real-Time Translator
-            </span>
+            <span className="text-sm font-semibold tracking-tight text-stone-900">Sign Bridge</span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-stone-400">Real-Time Translator</span>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <StatusPill
             label={`${Math.round(fps)} FPS`}
-            icon={<Activity className="h-3.5 w-3.5" />}
+            icon={<Activity className="h-3.5 w-3.5 text-brand" />}
           />
           <StatusPill
             label={modelLoaded ? "Model: Ready" : "Model: Heuristic"}
             icon={
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  modelLoaded ? "bg-emerald-400" : "bg-amber-400"
-                }`}
-              />
+              <span className={`h-1.5 w-1.5 rounded-full ${modelLoaded ? "bg-emerald-500" : "bg-amber-500"}`} />
             }
           />
-          <div className="flex items-center gap-2 rounded-full border border-white/5 bg-white/[0.02] px-3 py-1.5">
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${meta.dot} animate-pulse`}
-            />
-            <span className={`text-xs font-medium ${meta.color}`}>
-              {meta.label}
-            </span>
+          <div className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 shadow-card">
+            <span className={`h-1.5 w-1.5 rounded-full ${meta.dot} animate-pulse`} />
+            <span className={`text-xs font-medium ${meta.color}`}>{meta.label}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-1">
           <a
             href="/history"
-            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition hover:bg-white/5 hover:text-white md:inline-flex"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-stone-500 transition hover:bg-stone-100 hover:text-stone-900 md:inline-flex"
           >
             <BookOpen className="h-3.5 w-3.5" /> History
           </a>
-          {/* TODO: replace with the actual repository URL */}
           <a
-            href="https://github.com/your-org/real-time-sign-language-translator"
+            href="https://github.com/Ghostfreak-cypher/real-time-sign-language-translator"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition hover:bg-white/5 hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-stone-500 transition hover:bg-stone-100 hover:text-stone-900"
           >
             <Github className="h-3.5 w-3.5" />
           </a>
         </div>
+
       </div>
     </motion.header>
   );
@@ -95,7 +81,7 @@ export function Header({ status, modelLoaded, fps }: Props) {
 
 function StatusPill({ label, icon }: { label: string; icon: React.ReactNode }) {
   return (
-    <div className="hidden items-center gap-1.5 rounded-full border border-white/5 bg-white/[0.02] px-3 py-1.5 text-xs text-zinc-300 lg:inline-flex">
+    <div className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-600 shadow-card lg:inline-flex">
       {icon}
       <span className="font-mono">{label}</span>
     </div>

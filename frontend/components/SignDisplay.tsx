@@ -20,8 +20,6 @@ export function SignDisplay({
   fps,
   latencyMs,
 }: Props) {
-  // Show the LSTM motion prediction when it's more confident than the RF result
-  // and is not the placeholder "—". RF wins on ties (strictly greater-than).
   const staticConf = prediction?.confidence ?? 0;
   const seqConf = sequencePrediction?.confidence ?? 0;
   const showMotion =
@@ -33,46 +31,50 @@ export function SignDisplay({
   const activePrediction = showMotion ? sequencePrediction : prediction;
   const label = activePrediction?.prediction ?? "—";
   const confidence = activePrediction?.confidence ?? 0;
-  const activeLatency = showMotion
-    ? (sequencePrediction?.latency_ms ?? null)
-    : latencyMs;
+  const activeLatency = showMotion ? (sequencePrediction?.latency_ms ?? null) : latencyMs;
 
-  const isPlaceholder =
-    !activePrediction || label === "—" || label === "Model not trained";
+  const isPlaceholder = !activePrediction || label === "—" || label === "Model not trained";
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-card">
-      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-4 py-2.5">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-200">
-          <Sparkles className="h-4 w-4 text-violet-300" />
+    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-card">
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-stone-100 bg-stone-50/60 px-4 py-2.5">
+        <div className="flex items-center gap-2 text-sm font-medium text-stone-700">
+          <Sparkles className="h-4 w-4 text-brand" />
           Detected Sign
         </div>
-        <span className="font-mono text-[10px] text-zinc-500">
+        <span className="font-mono text-[10px] text-stone-400">
           {activeLatency !== null ? `${activeLatency.toFixed(0)} ms` : "—"}
         </span>
       </div>
 
+      {/* Main content */}
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+
+        {/* Big letter */}
         <motion.div
           key={label}
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 22 }}
           className={cn(
-            "text-6xl font-semibold tracking-tight md:text-7xl",
-            isPlaceholder ? "text-zinc-700" : "text-gradient",
+            "text-7xl font-bold tracking-tight md:text-8xl",
+            isPlaceholder ? "text-stone-200" : "text-gradient",
           )}
         >
           {label}
         </motion.div>
 
+        {/* Motion badge */}
         {showMotion && (
-          <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-violet-300">
+          <span className="rounded-full border border-brand-muted/50 bg-brand-light px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-brand">
             motion
           </span>
         )}
 
-        <p className="max-w-xs text-xs text-zinc-500">
+        {/* Sub-label */}
+        <p className="max-w-xs text-xs text-stone-400">
           {isPlaceholder
             ? "Show a sign to your webcam to begin translation."
             : showMotion
@@ -80,31 +82,31 @@ export function SignDisplay({
               : "Stable prediction. Speak, save, or compose a sentence."}
         </p>
 
-        <div className="grid w-full grid-cols-2 gap-2 pt-2">
+        {/* Confidence + FPS pills */}
+        <div className="grid w-full grid-cols-2 gap-2 pt-1">
           <Metric
-            icon={<TrendingUp className="h-3.5 w-3.5 text-emerald-300" />}
+            icon={<TrendingUp className="h-3.5 w-3.5" />}
             label="Confidence"
             value={formatPercent(Math.min(confidence, 1), 0)}
-            tone={
-              confidence >= 0.6 ? "good" : confidence >= 0.35 ? "warn" : "muted"
-            }
+            tone={confidence >= 0.6 ? "good" : confidence >= 0.35 ? "warn" : "muted"}
           />
           <Metric
-            icon={<Zap className="h-3.5 w-3.5 text-cyan-300" />}
+            icon={<Zap className="h-3.5 w-3.5" />}
             label="Stream"
             value={`${Math.max(0, Math.round(fps))} fps`}
             tone={fps >= 25 ? "good" : fps >= 15 ? "warn" : "muted"}
           />
         </div>
 
+        {/* Landmark progress */}
         <div className="w-full">
-          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-zinc-500">
+          <div className="mb-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider text-stone-400">
             <span>Landmarks captured</span>
-            <span className="font-mono text-zinc-400">{landmarkCount}/21</span>
+            <span className="font-mono text-stone-500">{landmarkCount}/21</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-100">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
+              className="h-full rounded-full bg-brand"
               initial={{ width: 0 }}
               animate={{ width: `${(landmarkCount / 21) * 100}%` }}
               transition={{ duration: 0.3 }}
@@ -112,18 +114,19 @@ export function SignDisplay({
           </div>
         </div>
 
+        {/* Top-k alternatives */}
         {prediction?.top_k && prediction.top_k.length > 0 && !showMotion && (
           <div className="w-full space-y-1.5 pt-1">
-            <div className="text-[10px] uppercase tracking-wider text-zinc-500">
+            <div className="text-[10px] uppercase tracking-wider text-stone-400">
               Top alternatives
             </div>
             {prediction.top_k.slice(0, 3).map((alt, i) => (
               <div
                 key={`${alt.label}-${i}`}
-                className="flex items-center justify-between rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-1 text-xs"
+                className="flex items-center justify-between rounded-lg border border-stone-100 bg-stone-50 px-2.5 py-1 text-xs"
               >
-                <span className="text-zinc-300">{alt.label}</span>
-                <span className="font-mono text-zinc-500">
+                <span className="font-medium text-stone-700">{alt.label}</span>
+                <span className="font-mono text-stone-400">
                   {(alt.confidence * 100).toFixed(0)}%
                 </span>
               </div>
@@ -146,19 +149,19 @@ function Metric({
   value: string;
   tone: "good" | "warn" | "muted";
 }) {
-  const toneClass =
-    tone === "good"
-      ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-200"
-      : tone === "warn"
-        ? "border-amber-500/20 bg-amber-500/5 text-amber-200"
-        : "border-white/5 bg-white/[0.02] text-zinc-300";
+  const styles = {
+    good: "border-emerald-200 bg-emerald-50 text-emerald-800 [&_svg]:text-emerald-500",
+    warn: "border-amber-200  bg-amber-50  text-amber-800  [&_svg]:text-amber-500",
+    muted:"border-stone-200  bg-stone-50  text-stone-600  [&_svg]:text-stone-400",
+  }[tone];
+
   return (
-    <div className={cn("rounded-lg border px-3 py-2 text-left", toneClass)}>
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider opacity-80">
+    <div className={cn("rounded-xl border px-3 py-2.5 text-left transition", styles)}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider opacity-70">
         {icon}
         {label}
       </div>
-      <div className="font-mono text-base font-semibold">{value}</div>
+      <div className="mt-0.5 font-mono text-base font-bold">{value}</div>
     </div>
   );
 }

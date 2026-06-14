@@ -6,29 +6,30 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./hooks/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0f",
-        foreground: "#f4f4f5",
-        card: "#111118",
-        border: "#1f1f2b",
-        muted: "#71717a",
-        accent: "#7c3aed",
-        "accent-2": "#06b6d4",
-        success: "#10b981",
-        danger: "#ef4444",
+        background: "#f4f3ee",
+        foreground: "#1c1917",
+        card: "#ffffff",
+        border: "#e5e1db",
+        muted: "#78716c",
+        brand: "#c15f3c",
+        "brand-light": "#fdf0eb",
+        "brand-muted": "#e8c4b4",
+        "brand-dark": "#a04e30",
+        success: "#4a7c59",
+        danger: "#b84040",
+        warning: "#a16207",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
-      backgroundImage: {
-        "grid-pattern":
-          "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-        "radial-glow":
-          "radial-gradient(60% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, transparent 60%)",
+      boxShadow: {
+        card: "0 1px 3px rgba(28,25,23,0.06), 0 4px 16px rgba(28,25,23,0.04)",
+        "card-hover": "0 2px 8px rgba(28,25,23,0.08), 0 8px 24px rgba(28,25,23,0.06)",
+        brand: "0 0 0 2px rgba(193,95,60,0.25), 0 4px 16px rgba(193,95,60,0.12)",
       },
       animation: {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",

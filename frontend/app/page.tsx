@@ -101,12 +101,12 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Futuristic backdrop: dot grid + drifting aurora glows */}
+      {/* Warm backdrop: dot grid + drifting terracotta/sand aurora */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="aurora absolute -top-1/4 left-1/4 h-[60vh] w-[60vw] rounded-full bg-violet-600/10 blur-[120px]" />
+        <div className="dot-grid absolute inset-0 opacity-60" />
+        <div className="aurora absolute -top-1/4 left-1/4 h-[60vh] w-[60vw] rounded-full bg-brand/6 blur-[140px]" />
         <div
-          className="aurora absolute -bottom-1/4 right-1/4 h-[50vh] w-[50vw] rounded-full bg-cyan-500/10 blur-[120px]"
+          className="aurora absolute -bottom-1/4 right-1/4 h-[50vh] w-[50vw] rounded-full bg-stone-400/8 blur-[120px]"
           style={{ animationDelay: "-9s" }}
         />
       </div>

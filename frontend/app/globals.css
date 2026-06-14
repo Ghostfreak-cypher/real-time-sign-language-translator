@@ -14,94 +14,86 @@
 html,
 body {
   height: 100%;
-  background: #0a0a0f;
-  color: #f4f4f5;
+  background: #f4f3ee;
+  color: #1c1917;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-image: radial-gradient(
-      1200px circle at 0% 0%,
-      rgba(124, 58, 237, 0.08),
-      transparent 40%
-    ),
-    radial-gradient(900px circle at 100% 100%, rgba(6, 182, 212, 0.06), transparent 50%);
+  background-image:
+    radial-gradient(900px circle at 10% 15%, rgba(193, 95, 60, 0.07), transparent 55%),
+    radial-gradient(700px circle at 90% 85%, rgba(177, 173, 161, 0.09), transparent 55%);
   background-attachment: fixed;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — warm terracotta tint */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  background: rgba(193, 95, 60, 0.18);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(193, 95, 60, 0.32);
 }
 
-/* Glassmorphism card */
+/* Glassmorphism card — light frosted glass */
 .glass {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(229, 225, 219, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Subtle dot grid background */
+/* Subtle warm dot grid */
 .dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 18px 18px;
+  background-image: radial-gradient(rgba(193, 95, 60, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
+/* Terracotta gradient text */
 .text-gradient {
-  background: linear-gradient(90deg, #a78bfa 0%, #06b6d4 100%);
+  background: linear-gradient(90deg, #c15f3c 0%, #a04e30 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .ring-glow {
-  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35), 0 0 24px rgba(124, 58, 237, 0.18);
+  box-shadow: 0 0 0 2px rgba(193, 95, 60, 0.28), 0 0 20px rgba(193, 95, 60, 0.1);
 }
 
-/* ── Futuristic HUD layer ──────────────────────────────────────────────── */
-
-/* Neon glow that breathes — applied to the webcam frame when a hand locks on */
+/* Warm breathing glow when hand is tracked */
 .neon-active {
   box-shadow:
-    0 0 0 1px rgba(6, 182, 212, 0.45),
-    0 0 28px rgba(6, 182, 212, 0.18),
-    0 0 64px rgba(124, 58, 237, 0.12);
+    0 0 0 1.5px rgba(193, 95, 60, 0.55),
+    0 0 24px rgba(193, 95, 60, 0.16),
+    0 0 56px rgba(193, 95, 60, 0.08);
   animation: neonBreathe 2.4s ease-in-out infinite;
 }
 @keyframes neonBreathe {
   0%, 100% {
     box-shadow:
-      0 0 0 1px rgba(6, 182, 212, 0.45),
-      0 0 28px rgba(6, 182, 212, 0.18),
-      0 0 64px rgba(124, 58, 237, 0.12);
+      0 0 0 1.5px rgba(193, 95, 60, 0.55),
+      0 0 24px rgba(193, 95, 60, 0.16),
+      0 0 56px rgba(193, 95, 60, 0.08);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgba(124, 58, 237, 0.5),
-      0 0 36px rgba(124, 58, 237, 0.22),
-      0 0 72px rgba(6, 182, 212, 0.14);
+      0 0 0 2px rgba(160, 78, 48, 0.65),
+      0 0 32px rgba(193, 95, 60, 0.22),
+      0 0 64px rgba(193, 95, 60, 0.10);
   }
 }
 
-/* CRT-style scanline texture over video */
+/* CRT-style scanline — very subtle on light video */
 .scanlines::after {
   content: "";
   position: absolute;
@@ -111,57 +103,56 @@ body {
     to bottom,
     transparent 0px,
     transparent 3px,
-    rgba(0, 0, 0, 0.12) 3px,
-    rgba(0, 0, 0, 0.12) 4px
+    rgba(0, 0, 0, 0.04) 3px,
+    rgba(0, 0, 0, 0.04) 4px
   );
 }
 
-/* Vertical sweep beam */
+/* Terracotta scan sweep beam */
 @keyframes scanSweep {
-  0% { top: -10%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
+  0%   { top: -10%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
   100% { top: 105%; opacity: 0; }
 }
 .scan-beam {
   position: absolute;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.9), transparent);
-  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8));
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(193, 95, 60, 0.9), transparent);
+  filter: drop-shadow(0 0 5px rgba(193, 95, 60, 0.65));
   animation: scanSweep 2.8s linear infinite;
 }
 
-/* Slow aurora drift for the page backdrop */
+/* Backdrop aurora drift */
 @keyframes auroraDrift {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  33% { transform: translate3d(4%, -3%, 0) scale(1.06); }
-  66% { transform: translate3d(-3%, 3%, 0) scale(0.98); }
+  33%       { transform: translate3d(4%, -3%, 0) scale(1.06); }
+  66%       { transform: translate3d(-3%, 3%, 0) scale(0.98); }
 }
 .aurora {
   animation: auroraDrift 18s ease-in-out infinite;
   will-change: transform;
 }
 
-/* Animated gradient hairline (header / section dividers) */
+/* Animated hairline divider */
 @keyframes hairlineFlow {
-  0% { background-position: 0% 50%; }
+  0%   { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
 }
 .hairline-flow {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(124, 58, 237, 0.7),
-    rgba(6, 182, 212, 0.7),
+    rgba(193, 95, 60, 0.45),
+    rgba(160, 78, 48, 0.45),
     transparent
   );
   background-size: 200% 100%;
   animation: hairlineFlow 4s linear infinite;
 }
 
-/* Reduce motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

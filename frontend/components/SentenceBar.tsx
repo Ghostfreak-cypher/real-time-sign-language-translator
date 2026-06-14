@@ -1,15 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Volume2,
-  VolumeX,
-  Trash2,
-  Save,
-  Play,
-  Mic,
-  StopCircle,
-} from "lucide-react";
+import { Volume2, VolumeX, Trash2, Save, Play, Mic, StopCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -28,47 +20,37 @@ type Props = {
 };
 
 export function SentenceBar({
-  words,
-  text,
-  onClear,
-  onBackspace,
-  onSave,
-  onSpeak,
-  muted,
-  speaking,
-  onToggleMute,
-  onStopSpeech,
-  lastConfidence,
+  words, text, onClear, onBackspace, onSave, onSpeak,
+  muted, speaking, onToggleMute, onStopSpeech, lastConfidence,
 }: Props) {
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     if (!text) return;
     setSaving(true);
-    try {
-      await onSave(lastConfidence);
-    } finally {
-      setSaving(false);
-    }
+    try { await onSave(lastConfidence); } finally { setSaving(false); }
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-card">
-      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-4 py-2.5">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-200">
-          <Mic className="h-4 w-4 text-cyan-300" />
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-card">
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-stone-100 bg-stone-50/60 px-4 py-2.5">
+        <div className="flex items-center gap-2 text-sm font-medium text-stone-700">
+          <Mic className="h-4 w-4 text-brand" />
           Generated Sentence
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-zinc-500">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-stone-400">
           <span className="font-mono">{words.length} words</span>
-          <span className="h-1 w-1 rounded-full bg-zinc-600" />
+          <span className="h-1 w-1 rounded-full bg-stone-300" />
           <span className="font-mono">{text.length} chars</span>
         </div>
       </div>
 
+      {/* Sentence display */}
       <div className="min-h-[88px] px-4 py-4">
         {words.length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-stone-400">
             Your translated sentence will appear here. Detected signs are added
             automatically with smart spacing.
           </p>
@@ -82,7 +64,7 @@ export function SentenceBar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.18 }}
-                  className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 text-sm text-zinc-100"
+                  className="rounded-lg border border-brand-muted/40 bg-brand-light px-2.5 py-0.5 text-sm font-medium text-brand-dark"
                 >
                   {w}
                 </motion.span>
@@ -92,37 +74,19 @@ export function SentenceBar({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-white/5 bg-white/[0.02] px-3 py-2.5">
+      {/* Action bar */}
+      <div className="flex flex-wrap items-center gap-2 border-t border-stone-100 bg-stone-50/60 px-3 py-2.5">
         <ActionButton
           onClick={onToggleMute}
-          icon={
-            muted ? (
-              <VolumeX className="h-3.5 w-3.5" />
-            ) : (
-              <Volume2 className="h-3.5 w-3.5" />
-            )
-          }
+          icon={muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           label={muted ? "Unmute" : "Mute"}
           tone={muted ? "warn" : "default"}
         />
-        {/*
-          Single Speak/Stop toggle.
-          - Not speaking: clicking calls onSpeak to start playback.
-          - Speaking:     clicking calls onStopSpeech to cancel immediately.
-          The redundant standalone "Stop" button that existed alongside this
-          has been removed to eliminate the confusing duplicate controls.
-        */}
         <ActionButton
           onClick={speaking ? onStopSpeech : () => onSpeak(text)}
-          icon={
-            speaking ? (
-              <StopCircle className="h-3.5 w-3.5" />
-            ) : (
-              <Play className="h-3.5 w-3.5" />
-            )
-          }
+          icon={speaking ? <StopCircle className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
           label={speaking ? "Stop" : "Speak"}
-          tone={speaking ? "active" : "primary"}
+          tone={speaking ? "danger" : "primary"}
           disabled={!text && !speaking}
         />
         <div className="ml-auto flex items-center gap-2">
@@ -149,35 +113,28 @@ export function SentenceBar({
           />
         </div>
       </div>
+
     </div>
   );
 }
 
 function ActionButton({
-  onClick,
-  icon,
-  label,
-  tone = "default",
-  disabled,
+  onClick, icon, label, tone = "default", disabled,
 }: {
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
-  tone?: "default" | "primary" | "active" | "warn" | "danger" | "success";
+  tone?: "default" | "primary" | "danger" | "warn" | "success";
   disabled?: boolean;
 }) {
   const toneClass = {
-    default: "border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10",
-    primary:
-      "border-violet-500/30 bg-violet-500/15 text-violet-200 hover:bg-violet-500/25",
-    active:
-      "border-rose-500/40 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25",
-    warn: "border-amber-500/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20",
-    danger:
-      "border-rose-500/20 bg-rose-500/5 text-rose-200 hover:bg-rose-500/15",
-    success:
-      "border-emerald-500/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20",
+    default: "border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-stone-800",
+    primary: "border-brand-muted/50 bg-brand-light text-brand hover:bg-brand/10",
+    danger:  "border-red-200    bg-red-50    text-red-600   hover:bg-red-100",
+    warn:    "border-amber-200  bg-amber-50  text-amber-700 hover:bg-amber-100",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
   }[tone];
+
   return (
     <button
       onClick={onClick}
