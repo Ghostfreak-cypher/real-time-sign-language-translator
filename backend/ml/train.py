@@ -41,13 +41,22 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dataset", type=Path, default=Path("dataset/landmarks"))
     p.add_argument("--out", type=Path, default=Path("ml/classifier.pkl"))
     p.add_argument("--test-size", type=float, default=0.2)
-    p.add_argument("--n-estimators", type=int, default=150)
+    p.add_argument("--n-estimators", type=int, default=100)
     p.add_argument(
         "--max-depth",
         type=int,
-        default=20,
-        help="Max tree depth. Lower = smaller model. 20 keeps accuracy while "
+        default=15,
+        help="Max tree depth. Lower = smaller model. 15 keeps accuracy while "
              "staying well under 100 MB for deployment on free-tier hosts.",
+    )
+    p.add_argument(
+        "--compress",
+        type=int,
+        default=6,
+        choices=range(10),
+        metavar="0-9",
+        help="joblib zlib compression level for the output pkl (0=none, 9=max). "
+             "Default 6 cuts file size ~10x with minimal load-time overhead.",
     )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument(
@@ -157,7 +166,7 @@ def main() -> int:
         random_state=args.seed,
         n_jobs=-1,
         class_weight="balanced",
-        min_samples_leaf=2,
+        min_samples_leaf=3,
         max_features="sqrt",
     )
     print(f"Training RandomForest ({args.n_estimators} trees, max_depth={args.max_depth}) ...")
@@ -177,6 +186,7 @@ def main() -> int:
             "preprocess": PREPROCESS_VERSION,
         },
         args.out,
+        compress=args.compress,
     )
     print(f"\nSaved model bundle to {args.out}")
 
